@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rainfall Prediction System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .icon {
+            font-size: 50px;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.2);
+            background-color: #f8f9ff;
+        }
+
+        input[type="number"]::placeholder {
+            color: #999;
+        }
+
+        .input-info {
+            font-size: 12px;
+            color: #999;
+            margin-top: 4px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        button {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        button[type="submit"] {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        button[type="submit"]:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button[type="submit"]:active {
+            transform: translateY(0);
+        }
+
+        button[type="reset"] {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        button[type="reset"]:hover {
+            background: #e0e0e0;
+        }
+
+        .result-container {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        .result-container.show {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-rain {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .result-no-rain {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .result-error {
+            background: #fee;
+            color: #c33;
+            border: 2px solid #fcc;
+        }
+
+        .result-container h2 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .result-container p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .confidence {
+            font-size: 18px;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .info-box {
+            background: #f0f4ff;
+            border-left: 4px solid #667eea;
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            color: #555;
+        }
+
+        .error-message {
+            color: #c33;
+            font-size: 12px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 25px;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+
+            button {
+                padding: 12px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="icon">🌧️</div>
+            <h1>Rainfall Prediction</h1>
+            <p>AI-Powered Weather Forecasting System</p>
+            <p style="font-size: 12px; color: #999; margin-top: 10px;">
+                Accuracy: 70% • Model: Neural Network (MLPClassifier)
+            </p>
+        </div>
+
+        <!-- Info Box -->
+        <div class="info-box">
+            📌 Enter current weather conditions to predict rainfall probability
+        </div>
+
+        <!-- Form -->
+        <form id="predictionForm" onsubmit="submitForm(event)">
+            <!-- Temperature -->
+            <div class="form-group">
+                <label for="temperature">🌡️ Temperature (°C)</label>
+                <input 
+                    type="number" 
+                    id="temperature" 
+                    name="temperature" 
+                    placeholder="e.g., 28.5"
+                    step="0.1"
+                    min="-50"
+                    max="60"
+                    required
+                >
+                <div class="input-info">Range: -50°C to 60°C</div>
+                <div class="error-message" id="temp-error"></div>
+            </div>
+
+            <!-- Humidity -->
+            <div class="form-group">
+                <label for="humidity">💧 Humidity (%)</label>
+                <input 
+                    type="number" 
+                    id="humidity" 
+                    name="humidity" 
+                    placeholder="e.g., 70"
+                    min="0"
+                    max="100"
+                    required
+                >
+                <div class="input-info">Range: 0% to 100%</div>
+                <div class="error-message" id="humidity-error"></div>
+            </div>
+
+            <!-- Air Pressure -->
+            <div class="form-group">
+                <label for="pressure">🔽 Air Pressure (hPa)</label>
+                <input 
+                    type="number" 
+                    id="pressure" 
+                    name="pressure" 
+                    placeholder="e.g., 1012.5"
+                    step="0.1"
+                    min="800"
+                    max="1100"
+                    required
+                >
+                <div class="input-info">Range: 800 to 1100 hPa</div>
+                <div class="error-message" id="pressure-error"></div>
+            </div>
+
+            <!-- Wind Speed -->
+            <div class="form-group">
+                <label for="wind_speed">💨 Wind Speed (km/h)</label>
+                <input 
+                    type="number" 
+                    id="wind_speed" 
+                    name="wind_speed" 
+                    placeholder="e.g., 9.0"
+                    step="0.1"
+                    min="0"
+                    max="100"
+                    required
+                >
+                <div class="input-info">Range: 0 to 100 km/h</div>
+                <div class="error-message" id="wind-error"></div>
+            </div>
+
+            <!-- Buttons -->
+            <div class="button-group">
+                <button type="submit">🔮 Predict</button>
+                <button type="reset" onclick="resetForm()">🔄 Clear</button>
+            </div>
+        </form>
+
+        <!-- Loading Spinner -->
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p style="margin-top: 10px; color: #666; font-size: 14px;">Processing...</p>
+        </div>
+
+        <!-- Result Container -->
+        <div class="result-container" id="resultContainer">
+            <h2 id="predictionTitle">Prediction Result</h2>
+            <p id="predictionText">Loading...</p>
+            <div class="confidence" id="confidence"></div>
+        </div>
+    </div>
+
+    <script>
+        function validateInputs() {
+            let isValid = true;
+            const temp = parseFloat(document.getElementById('temperature').value);
+            const humidity = parseFloat(document.getElementById('humidity').value);
+            const pressure = parseFloat(document.getElementById('pressure').value);
+            const wind = parseFloat(document.getElementById('wind_speed').value);
+
+            // Reset error messages
+            document.querySelectorAll('.error-message').forEach(el => el.classList.remove('show'));
+
+            // Validate Temperature
+            if (isNaN(temp) || temp < -50 || temp > 60) {
+                document.getElementById('temp-error').textContent = 'Temperature must be between -50°C and 60°C';
+                document.getElementById('temp-error').classList.add('show');
+                isValid = false;
+            }
+
+            // Validate Humidity
+            if (isNaN(humidity) || humidity < 0 || humidity > 100) {
+                document.getElementById('humidity-error').textContent = 'Humidity must be between 0% and 100%';
+                document.getElementById('humidity-error').classList.add('show');
+                isValid = false;
+            }
+
+            // Validate Pressure
+            if (isNaN(pressure) || pressure < 800 || pressure > 1100) {
+                document.getElementById('pressure-error').textContent = 'Pressure must be between 800 and 1100 hPa';
+                document.getElementById('pressure-error').classList.add('show');
+                isValid = false;
+            }
+
+            // Validate Wind Speed
+            if (isNaN(wind) || wind < 0 || wind > 100) {
+                document.getElementById('wind-error').textContent = 'Wind speed must be between 0 and 100 km/h';
+                document.getElementById('wind-error').classList.add('show');
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        function submitForm(event) {
+            event.preventDefault();
+
+            // Validate inputs
+            if (!validateInputs()) {
+                return;
+            }
+
+            // Show loading spinner
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('resultContainer').classList.remove('show');
+
+            // Get form data
+            const temperature = document.getElementById('temperature').value;
+            const humidity = document.getElementById('humidity').value;
+            const pressure = document.getElementById('pressure').value;
+            const wind_speed = document.getElementById('wind_speed').value;
+
+            // Send POST request
+            fetch('/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    temperature: parseFloat(temperature),
+                    humidity: parseFloat(humidity),
+                    pressure: parseFloat(pressure),
+                    wind_speed: parseFloat(wind_speed)
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Hide loading spinner
+                document.getElementById('loading').style.display = 'none';
+
+                // Display result
+                const resultContainer = document.getElementById('resultContainer');
+                const predictionTitle = document.getElementById('predictionTitle');
+                const predictionText = document.getElementById('predictionText');
+                const confidence = document.getElementById('confidence');
+
+                if (data.error) {
+                    resultContainer.className = 'result-container show result-error';
+                    predictionTitle.textContent = '❌ Error';
+                    predictionText.textContent = data.error;
+                    confidence.textContent = '';
+                } else {
+                    if (data.prediction === 'Yes') {
+                        resultContainer.className = 'result-container show result-rain';
+                        predictionTitle.textContent = '☔ Rainfall Expected';
+                        predictionText.textContent = 'There is a high probability of rain in the near future.';
+                    } else {
+                        resultContainer.className = 'result-container show result-no-rain';
+                        predictionTitle.textContent = '☀️ No Rainfall';
+                        predictionText.textContent = 'It is unlikely to rain in the near future.';
+                    }
+                    confidence.textContent = `Confidence: ${data.confidence.toFixed(2)}%`;
+                }
+
+                resultContainer.classList.add('show');
+            })
+            .catch(error => {
+                // Hide loading spinner
+                document.getElementById('loading').style.display = 'none';
+
+                // Display error
+                const resultContainer = document.getElementById('resultContainer');
+                resultContainer.className = 'result-container show result-error';
+                document.getElementById('predictionTitle').textContent = '❌ Error';
+                document.getElementById('predictionText').textContent = 'Failed to connect to server: ' + error.message;
+                document.getElementById('confidence').textContent = '';
+                resultContainer.classList.add('show');
+            });
+        }
+
+        function resetForm() {
+            document.getElementById('predictionForm').reset();
+            document.getElementById('resultContainer').classList.remove('show');
+            document.getElementById('loading').style.display = 'none';
+            document.querySelectorAll('.error-message').forEach(el => el.classList.remove('show'));
+        }
+
+        // Example values on page load (optional)
+        window.addEventListener('load', function() {
+            // You can pre-fill with example values
+            // document.getElementById('temperature').value = '28.5';
+            // document.getElementById('humidity').value = '70';
+            // document.getElementById('pressure').value = '1012.5';
+            // document.getElementById('wind_speed').value = '9.0';
+        });
+    </script>
+</body>
+</html>
